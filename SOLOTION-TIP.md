@@ -97,13 +97,3 @@ const addToQueue = throttle(2, uri => new Promise((resolve, reject) => {
   setTimeout(()=> resolve({/* my data */}), 150) // 150ms
 }))
 ```
-
-# Solution branchs
-
-Please checkout all the different solution branches to see what is the best or better way to solve the problem
-
-<strong>OK</strong>: hoogle-solotion
-
-<strong>GOOD</strong>: hoogle-solotion-extra
-
-<strong>OUR GOAL</strong>: hoogle-solotion-clean
