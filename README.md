@@ -102,3 +102,10 @@ abilities on your own time in a low-pressure environment. Have fun with it!
 - Commit your work to that branch (make sure not to leave uncommitted work!)
 - Feel free to use TODO.md to include any additional thoughts or comments on
 the app, your implementation, or what you would do if given more time.
+
+## CHECKOUT
+
+[SOLOTION-TIP.md](./SOLOTION-TIP.md)
+
+[TIPS.md](./TIPS.md)
+
