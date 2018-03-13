@@ -1,0 +1,45 @@
+{
+  "name": "hoogle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "hrawler": "./bin/hrawler"
+  },
+  "scripts": {
+    "start": "babel-node src/hrawler/index.js",
+    "lint": "eslint src/**/*.js",
+    "test-watch": "ava --watch",
+    "test": "ava"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-airbnb": "^2.4.0",
+    "eslint": "^4.18.2",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0"
+  },
+  "ava": {
+    "snapshotDir": "__snapshot__",
+    "files": [
+      "__test__/*.js"
+    ],
+    "source": [
+      "src/**/*.{js,jsx}"
+    ],
+    "concurrency": 5,
+    "failFast": true,
+    "require": [
+      "babel-register"
+    ],
+    "babel": "inherit"
+  },
+  "dependencies": {
+    "commander": "^2.14.1",
+    "json5": "^0.5.1"
+  }
+}
