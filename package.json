@@ -7,7 +7,7 @@
     "hrawler": "./bin/hrawler"
   },
   "scripts": {
-    "start": "babel-node src/hrawler/index.js",
+    "start": "babel-node src/hrawler/index.js -f ./data/list-of-urls.json",
     "lint": "eslint src/**/*.js",
     "test-watch": "ava --watch",
     "test": "ava"
@@ -39,7 +39,13 @@
     "babel": "inherit"
   },
   "dependencies": {
+    "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
     "commander": "^2.14.1",
-    "json5": "^0.5.1"
+    "eslint-config-airbnb": "^16.1.0",
+    "fetch": "^1.1.0",
+    "json5": "^0.5.1",
+    "node-fetch": "^2.1.1",
+    "url": "^0.11.0"
   }
 }

@@ -18,8 +18,10 @@ const queue = new Queue(program.concurrency, program.timeout)
 const fullPath = path.resolve(process.cwd(), program.file)
 
 console.info(`Loading file ${fullPath}...`)
+
 queue.loadFile(fullPath)
   .then(() => queue.start())
+  .then(() => queue.listOfUrls.map(url => queue.fetchUrl(url.url)))
   .catch((err) => {
     console.error(`Error reading file ${fullPath} because: ${err.message}`)
     process.exit(1)
