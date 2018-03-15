@@ -42,51 +42,78 @@ export default class Queue {
   }
 
   fetchUrl(newUrl) {
-    const urlDetail = url.parse(newUrl);
-    const host = urlDetail.host;
-    fetch(newUrl)
-      .then((res) => {
-        if (res.status === 400) {
-          console.log('page not found');
-          res.sendStatus(400);
-        } else if (res.status === /5*/) {
-          console.log('500');
-          res.sendStatus(500);
-        } else if (res.status === 200) {
-          console.log('200');
+    return new Promise((resolve, reject) => {
+      const urlDetail = url.parse(newUrl);
+      const host = urlDetail.host;
+
+      if (this.visited[newUrl]) {
+        resolve();
+      } else {
+        this.visited[newUrl] = true;
+        try {
+          fetch(newUrl)
+            .then((res) => {
+              if (res.status === 400) {
+                console.log('page not found');
+                res.sendStatus(400);
+              } else if (res.status === /5*/) {
+                console.log('500');
+                res.sendStatus(500);
+              } else if (res.status === 200) {
+                console.log('200');
+              }
+              console.log('res status', res.status);
+              return res.text();
+            })
+            .then((html) => {
+              const $ = cheerio.load(html);
+              const newUrls = $('a[href]').map((i, el) => $(el).attr('href'));
+              const internalUrl = [];
+              const externalUrl = [];
+              let noPathName = 0;
+              Array.from(newUrls).map((uri) => {
+                const parseUri = url.parse(uri);
+                if (!parseUri.pathname) {
+                  noPathName++;
+                  return false;
+                }
+                // filter out javascripts
+                if (parseUri.protocol === 'javascript') {
+                  return false;
+                }
+                // fill out host
+                if (!parseUri.host) {
+                  parseUri.host = host;
+                  parseUri.protocol = urlDetail.protocal;
+                  parseUri.hostname = urlDetail.hostname;
+                }
+                // handle external paths
+                if (parseUri.host !== host) {
+                  externalUrl.push(uri);
+                } else {
+                  parseUri.pathname = path.resolve(urlDetail.pathname, parseUri.pathname);
+                  parseUri.href = host + parseUri.pathname;
+                  internalUrl.push(url.format(uri));
+                }
+              })
+              console.log('external url', externalUrl.length);
+              console.log('internal url', internalUrl);
+              console.log('no path name', noPathName);
+              this.listToFollow = [...internalUrl, ...this.listToFollow];
+              console.log('listToFollow', this.listToFollow.length);
+              resolve()
+            })
+        } catch (error) {
+          reject(error)
         }
-        console.log('res status', res.status);
-        return res.text();
-      })
-      .then((html) => {
-        const $ = cheerio.load(html);
-        const newUrls = $('a[href]').map((i, el) => $(el).attr('href'));
-        const internalUrl = [];
-        const externalUrl = [];
-        let noPathName = 0;
-        console.log('newUrl length', newUrls.length);
-        Array.from(newUrls).map((uri) => {
-          const parseUri = url.parse(uri);
-          if (!parseUri.pathname) {
-            noPathName++;
-            return false;
-          }
-          // handle externam paths
-          if (parseUri.hostname !== host) {
-            externalUrl.push(uri);
-          } else {
-            parseUri.host = host;
-            parseUri.protocol = urlDetail.protocal;
-            parseUri.pathname = path.resolve(urlDetail.pathname, parseUri.pathname);
-            parseUri.href = host + parseUri.pathname;
-            internalUrl.push(uri);
-          }
-        })
-        console.log('external url', externalUrl.length);
-        console.log('internal url', internalUrl.length);
-        console.log('no path name', noPathName);
-        this.listToFollow = [...this.listToFollow, ...internalUrl];
-      })
-      .catch(err => console.log('err in fetch', err))
+      }
+    })
+  }
+
+  followUrl() {
+    console.log('inside follow url');
+    while (this.listToFollow.length > 0) {
+      this.fetchUrl(this.listToFollow.pop());
+    }
   }
 }
