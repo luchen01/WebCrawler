@@ -22,7 +22,7 @@ console.info(`Loading file ${fullPath}...`)
 queue.loadFile(fullPath)
   .then(() => queue.start())
   .then(() => Promise.all(queue.listOfUrls.map(url => queue.fetchUrl(url.url))))
-  // .then(() => queue.followUrl())
+  .then(() => queue.followUrl())
   .catch((err) => {
     console.error(`Error reading file ${fullPath} because: ${err.message}`)
     process.exit(1)
