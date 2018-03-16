@@ -41,6 +41,13 @@ export default class Queue {
     })
   }
 
+
+  parseHTML(html, statusCode, headers){
+    console.log(html);
+    const $ = cheerio.load(html);
+
+  }
+
   fetchUrl(newUrl) {
     return new Promise((resolve, reject) => {
       const urlDetail = url.parse(newUrl);
@@ -50,9 +57,15 @@ export default class Queue {
         resolve();
       } else {
         this.visited[newUrl] = true;
+        let statusCode;
+        let headers;
+
         try {
           fetch(newUrl)
             .then((res) => {
+              statusCode = res.status;
+              headers = res.headers.raw();
+
               if (res.status === 400) {
                 console.log('page not found');
                 res.sendStatus(400);
@@ -67,7 +80,9 @@ export default class Queue {
             })
             .then((html) => {
               const $ = cheerio.load(html);
-              const newUrls = $('a[href]').map((i, el) => $(el).attr('href'));
+              const newUrls = $('a[href]').map((i, el) => {
+                {href: $(el).attr('href'), rel: $(el).attr('rel')}
+              });
               const internalUrl = [];
               const externalUrl = [];
               let noPathName = 0;
@@ -84,7 +99,7 @@ export default class Queue {
                 // fill out host
                 if (!parseUri.host) {
                   parseUri.host = host;
-                  parseUri.protocol = urlDetail.protocal;
+                  parseUri.protocol = urlDetail.protocol;
                   parseUri.hostname = urlDetail.hostname;
                 }
                 // handle external paths
