@@ -45,8 +45,52 @@ export default class Queue {
   parseHTML(html, statusCode, headers){
     console.log(html);
     const $ = cheerio.load(html);
+    const newUrls = $('a[href]').map((i, el) => {
+      { href: $(el).attr('href'),
+        rel: $(el).attr('rel')}
+    });
 
+    const externalUrl = [];
+    let noPathName = 0;
+    const internalUrl = Array.from(newUrls).map((uri) => {
+      if(uri.rel === "nofollow"){
+        return false;
+      }
+      const parseUri = url.parse(uri.href);
+      
+      if (!parseUri.pathname) {
+        noPathName++;
+        return false;
+      }
+      // filter out javascripts
+      if (parseUri.protocol === 'javascript') {
+        return false;
+      }
+      // fill out host
+      if (!parseUri.host) {
+        parseUri.host = host;
+        parseUri.protocol = urlDetail.protocol;
+        parseUri.hostname = urlDetail.hostname;
+      }
+      // handle external paths
+      if (parseUri.host !== host) {
+        externalUrl.push(uri);
+        return false;
+      } else {
+        parseUri.pathname = path.resolve(urlDetail.pathname, parseUri.pathname);
+        parseUri.href = host + parseUri.pathname;
+        internalUrl.push(url.format(uri));
+      }
+    }).filter(Boolean)
+
+    console.log('external url', externalUrl.length);
+    console.log('internal url', internalUrl);
+    console.log('no path name', noPathName);
+    this.listToFollow = [...internalUrl, ...this.listToFollow];
+    console.log('listToFollow', this.listToFollow.length);
+    resolve()
   }
+
 
   fetchUrl(newUrl) {
     return new Promise((resolve, reject) => {
@@ -66,57 +110,13 @@ export default class Queue {
               statusCode = res.status;
               headers = res.headers.raw();
 
-              if (res.status === 400) {
-                console.log('page not found');
-                res.sendStatus(400);
-              } else if (res.status === /5*/) {
-                console.log('500');
-                res.sendStatus(500);
-              } else if (res.status === 200) {
-                console.log('200');
+              if(statusCode !== 200){
+                resolve();
               }
-              console.log('res status', res.status);
               return res.text();
             })
             .then((html) => {
-              const $ = cheerio.load(html);
-              const newUrls = $('a[href]').map((i, el) => {
-                {href: $(el).attr('href'), rel: $(el).attr('rel')}
-              });
-              const internalUrl = [];
-              const externalUrl = [];
-              let noPathName = 0;
-              Array.from(newUrls).map((uri) => {
-                const parseUri = url.parse(uri);
-                if (!parseUri.pathname) {
-                  noPathName++;
-                  return false;
-                }
-                // filter out javascripts
-                if (parseUri.protocol === 'javascript') {
-                  return false;
-                }
-                // fill out host
-                if (!parseUri.host) {
-                  parseUri.host = host;
-                  parseUri.protocol = urlDetail.protocol;
-                  parseUri.hostname = urlDetail.hostname;
-                }
-                // handle external paths
-                if (parseUri.host !== host) {
-                  externalUrl.push(uri);
-                } else {
-                  parseUri.pathname = path.resolve(urlDetail.pathname, parseUri.pathname);
-                  parseUri.href = host + parseUri.pathname;
-                  internalUrl.push(url.format(uri));
-                }
-              })
-              console.log('external url', externalUrl.length);
-              console.log('internal url', internalUrl);
-              console.log('no path name', noPathName);
-              this.listToFollow = [...internalUrl, ...this.listToFollow];
-              console.log('listToFollow', this.listToFollow.length);
-              resolve()
+              parseHTML(html, statusCode, headers)
             })
         } catch (error) {
           reject(error)

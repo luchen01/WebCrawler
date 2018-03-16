@@ -1,4 +1,4 @@
-class bots {
+class Bots {
   constructor() {
     this.queue = [];
     this.reincarnationCounter = 0;
@@ -33,6 +33,6 @@ class bots {
   }
 }
 
-const myBots = new bots()
+const myBots = new Bots()
 
 myBots.startBotWorker()
